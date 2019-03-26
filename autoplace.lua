@@ -200,7 +200,7 @@ local function make_resource(params)
     region_size = starting_region_size * 2,
     skip_offset = resource_index,
     skip_span = max_starting_resources * (discovery_level + 1),
-    candidate_point_count = starting_region_size * 2,
+    candidate_point_count = math.min(starting_region_size * 2, candidate_point_count),
     hard_region_target_quantity = false,
     density_expression = litexp(density_multiplier * starting_placement_mask),
     spot_quantity_expression = litexp(kilo2_amount),

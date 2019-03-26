@@ -1,6 +1,9 @@
 ----
 Version: 0.17.1
 Date: 2029-01-01
+  Balancing:
+    - The internal values have been adjusted to ease the overlap of resources.
   Bugfixes:
     - Fixed patch_size_fluctuance changing placement frequency instead of size.
+    - Fixed crash in map generation when setting high discovery_level.
     
