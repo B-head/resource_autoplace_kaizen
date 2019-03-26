@@ -166,8 +166,8 @@ local function make_resource(params)
   dump_expression(control_name..".regular_placement_mask", regular_placement_mask)
   dump_expression(control_name..".enlarge_effect_expression", enlarge_effect_expression)
 
-  local regular_richness_expression = regular_richness * base_multiplier * size_multiplier * enlarge_effect_expression ^ 2
-  local starting_richness_expression = starting_richness * base_multiplier * size_multiplier * enlarge_effect_expression ^ 2
+  local regular_richness_expression = regular_richness * base_multiplier * size_multiplier * random_expression * enlarge_effect_expression ^ 2
+  local starting_richness_expression = starting_richness * base_multiplier * size_multiplier
   local density_multiplier = patch_count_per_kt2 * frequency_multiplier
   local elevation_favorability = noise.clamp(elevation, 0, 1)
   local center_favorability = noise.clamp(1 - distance_from_center / starting_region_size, 0, 1)
@@ -185,7 +185,7 @@ local function make_resource(params)
     candidate_point_count = candidate_point_count,
     hard_region_target_quantity = false, 
     density_expression = litexp(density_fixed_bias * density_multiplier * regular_placement_mask / enlarge_effect_expression), 
-    spot_quantity_expression = litexp(kilo2_amount * random_expression), 
+    spot_quantity_expression = litexp(kilo2_amount), 
     spot_radius_expression = litexp(make_spot_radius_expression(regular_richness_expression)),
     spot_favorability_expression = litexp(elevation_favorability * regular_placement_mask),
     basement_value = -math.huge,
@@ -201,7 +201,6 @@ local function make_resource(params)
     skip_offset = resource_index,
     skip_span = max_starting_resources * (discovery_level + 1),
     candidate_point_count = starting_region_size * 2,
-    minimum_candidate_point_spacing = max_starting_spot_base_radius * 2,
     hard_region_target_quantity = false,
     density_expression = litexp(density_multiplier * starting_placement_mask),
     spot_quantity_expression = litexp(kilo2_amount),

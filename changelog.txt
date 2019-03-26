@@ -1,0 +1,6 @@
+----
+Version: 0.17.1
+Date: 2029-01-01
+  Bugfixes:
+    - Fixed patch_size_fluctuance changing placement frequency instead of size.
+    
