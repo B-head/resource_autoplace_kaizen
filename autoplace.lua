@@ -18,7 +18,6 @@ local max_starting_resources = 8
 local kilo_amount = 1024
 local kilo2_amount = kilo_amount * kilo_amount
 local region_size_multiplier = 4
-local candidate_point_count = 10000
 local onethird = 1/3
 
 if not data.seed_to_index_dictionary then
@@ -68,11 +67,12 @@ local function hash(str)
 end
 
 local function blob_noise(scale, amplitude, seed)
+  local s = seed or hash"blob" 
   return noise.function_application("factorio-basis-noise", {
     x = noise.var("x"),
     y = noise.var("y"),
     seed0 = noise.var("map_seed"),
-    seed1 = seed % 256,
+    seed1 = s % 256,
     input_scale = noise.var("segmentation_multiplier") / scale,
     output_scale = amplitude / noise.var("segmentation_multiplier")
   })
@@ -166,7 +166,7 @@ local function make_resource(params)
   dump_expression(control_name..".regular_placement_mask", regular_placement_mask)
   dump_expression(control_name..".enlarge_effect_expression", enlarge_effect_expression)
 
-  local regular_richness_expression = regular_richness * base_multiplier * size_multiplier * random_expression * enlarge_effect_expression ^ 2
+  local regular_richness_expression = regular_richness * base_multiplier * size_multiplier * enlarge_effect_expression ^ 2
   local starting_richness_expression = starting_richness * base_multiplier * size_multiplier
   local density_multiplier = patch_count_per_kt2 * frequency_multiplier
   local elevation_favorability = noise.clamp(elevation, 0, 1)
@@ -182,11 +182,10 @@ local function make_resource(params)
     seed0 = noise.var("map_seed"),
     seed1 = hash(seed),
     region_size =  kilo_amount * region_size_multiplier,
-    candidate_point_count = candidate_point_count,
     hard_region_target_quantity = false, 
     density_expression = litexp(density_fixed_bias * density_multiplier * regular_placement_mask / enlarge_effect_expression), 
-    spot_quantity_expression = litexp(kilo2_amount), 
-    spot_radius_expression = litexp(make_spot_radius_expression(regular_richness_expression)),
+    spot_quantity_expression = litexp(kilo2_amount * random_expression), 
+    spot_radius_expression = litexp(make_spot_radius_expression(regular_richness_expression * random_expression)),
     spot_favorability_expression = litexp(elevation_favorability * regular_placement_mask),
     basement_value = -math.huge,
     maximum_spot_basement_radius = max_regular_spot_radius
@@ -200,7 +199,8 @@ local function make_resource(params)
     region_size = starting_region_size * 2,
     skip_offset = resource_index,
     skip_span = max_starting_resources * (discovery_level + 1),
-    candidate_point_count = math.min(starting_region_size * 2, candidate_point_count),
+    candidate_point_count = math.min((starting_region_size * 2) ^ 2 / (max_starting_spot_base_radius * 2) ^ 2, 10000),
+    minimum_candidate_point_spacing = max_starting_spot_base_radius * 2,
     hard_region_target_quantity = false,
     density_expression = litexp(density_multiplier * starting_placement_mask),
     spot_quantity_expression = litexp(kilo2_amount),
@@ -213,9 +213,8 @@ local function make_resource(params)
   local regular_patches = regular_spots
   local starting_patches = starting_spots
   if enabled_blobbiness then
-    local blob_seed = hash(seed)
-    local starting_blob_expression = blob_noise(8, 1, blob_seed) + blob_noise(24, 1, blob_seed)
-    local regular_blob_expression = starting_blob_expression + blob_noise(64, 1.5, blob_seed)
+    local starting_blob_expression = blob_noise(8, 1) + blob_noise(24, 1)
+    local regular_blob_expression = starting_blob_expression + blob_noise(64, 1.5)
     regular_patches = regular_patches + regular_blob_expression * spot_peek_height(regular_spots) * blob_multiplier
     starting_patches = starting_patches + starting_blob_expression * spot_peek_height(starting_spots) * blob_multiplier
   end
