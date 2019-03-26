@@ -1,0 +1,11 @@
+{
+    "name": "resource_autoplace_kaizen",
+    "version": "0.17.0",
+    "title": "Resource Autoplace KAIZEN",
+    "author": "B_head",
+    "contact": "https://twitter.com/B_head00",
+    "homepage": "",
+    "factorio_version": "0.17",
+    "dependencies": ["base >= 0.17"],
+    "description": "Improve the 0.17 autoplace. Provides an API that can be used by other mods."
+}
