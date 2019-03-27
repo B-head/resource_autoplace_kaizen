@@ -1,23 +1,28 @@
 local noise = require("noise")
 local expression_to_ascii_math = require("noise.expression-to-ascii-math")
 local tne = noise.to_noise_expression
-local litexp = noise.literal_expression
 
 local base_multiplier = 1/40
 local blob_multiplier = 1/8
 local density_fixed_bias = 4
+local enemy_base_density_multiplier = 1/50
+local enemy_base_size_multiplier = 1
+local enemy_base_probability_multiplier = 1/60
 
-local first_level_radius = 32 * 3
+local first_level_radius = 32 * 4
 local discovery_level_base_radius = 32 * 12
 local enlarge_effect_distance = 32 * 12
 local fade_in_range = 32 * 6
+local starting_area_base_radius = 32 * 8
 local max_regular_spot_radius = 128
 local max_starting_spot_base_radius = 16
+local max_enemy_base_radius = 256
 
 local max_starting_resources = 8
 local kilo_amount = 1024
 local kilo2_amount = kilo_amount * kilo_amount
 local region_size_multiplier = 4
+local onehalf = 1/2
 local onethird = 1/3
 
 if not data.seed_to_index_dictionary then
@@ -46,6 +51,15 @@ local function get_resource_index(seed, discovery_level)
   nri[discovery_level] = resource_index + 1
   stid[discovery_level][seed] = resource_index
   return resource_index
+end
+
+local function litexp(value)
+  local v = tne(value)
+  if v.type == "literal-expression" then
+    return v
+  else
+    return { type = "literal-expression", literal_value = v }
+  end
 end
 
 local function dump_expression(name, expr)
@@ -78,6 +92,21 @@ local function blob_noise(scale, amplitude, seed)
   })
 end
 
+local function basic_spot_noise(arguments)
+  arguments.x = arguments.x or noise.var("x")
+  arguments.y = arguments.y or noise.var("y")
+  arguments.seed0 = arguments.seed0 or noise.var("map_seed")
+  arguments.seed1 = arguments.seed1 or arguments.seed or noise.var("map_seed")
+  arguments.hard_region_target_quantity = arguments.hard_region_target_quantity or false
+  arguments.basement_value = arguments.basement_value or -math.huge
+  arguments.maximum_spot_basement_radius = arguments.maximum_spot_basement_radius or math.huge
+  arguments.density_expression = litexp(arguments.density_expression or 1)
+  arguments.spot_quantity_expression = litexp(arguments.spot_quantity_expression or 1)
+  arguments.spot_radius_expression = litexp(arguments.spot_radius_expression or 1)
+  arguments.spot_favorability_expression = litexp(arguments.spot_favorability_expression or 1)
+  return noise.function_application("spot-noise", arguments)
+end
+
 local function spot_peek_height(quantity, radius)
   if type(quantity) == "table" and quantity.function_name == "spot-noise" then
     local spot_noise = quantity
@@ -108,10 +137,9 @@ local function make_resource(params)
   local frequency_multiplier = control_setting.frequency_multiplier
   local size_multiplier = control_setting.size_multiplier
 
-  
+
   local distance_from_center = noise.var("distance")
   local elevation = noise.var("elevation")
-  local moisture = noise.var("moisture")
   local random_expression = noise.random_between(1 - patch_size_fluctuance, 1 + patch_size_fluctuance)
 
   function make_starting_placement_mask(begin_radius, end_radius)
@@ -145,6 +173,7 @@ local function make_resource(params)
       begin_radius = discovery_level_base_radius * (discovery_level - 1)
       end_radius = discovery_level_base_radius * (discovery_level)
     end
+
     resource_index = get_resource_index(seed, discovery_level)
     starting_region_size = end_radius
     max_starting_spot_radius = math.min(max_starting_spot_base_radius * (discovery_level + 1), max_regular_spot_radius)
@@ -171,44 +200,37 @@ local function make_resource(params)
   local density_multiplier = patch_count_per_kt2 * frequency_multiplier
   local elevation_favorability = noise.clamp(elevation, 0, 1)
   local center_favorability = noise.clamp(1 - distance_from_center / starting_region_size, 0, 1)
+  local candidate_point_spacing = max_starting_spot_base_radius * 1.5
 
   function make_spot_radius_expression(richness_expression)
     return (kilo2_amount * richness_expression / resource_density) ^ (onethird)
   end
 
-  local regular_spots = noise.function_application("spot-noise", {
-    x = noise.var("x"),
-    y = noise.var("y"),
-    seed0 = noise.var("map_seed"),
-    seed1 = hash(seed),
+  local regular_spots = basic_spot_noise{
+    seed = hash(seed),
     region_size =  kilo_amount * region_size_multiplier,
-    hard_region_target_quantity = false, 
-    density_expression = litexp(density_fixed_bias * density_multiplier * regular_placement_mask / enlarge_effect_expression), 
-    spot_quantity_expression = litexp(kilo2_amount * random_expression), 
-    spot_radius_expression = litexp(make_spot_radius_expression(regular_richness_expression * random_expression)),
-    spot_favorability_expression = litexp(elevation_favorability * regular_placement_mask),
-    basement_value = -math.huge,
-    maximum_spot_basement_radius = max_regular_spot_radius
-  })
+    maximum_spot_basement_radius = max_regular_spot_radius,
 
-  local starting_spots = noise.function_application("spot-noise", {
-    x = noise.var("x"),
-    y = noise.var("y"),
-    seed0 = noise.var("map_seed"),
-    seed1 = hash"resource",
+    density_expression = density_fixed_bias * density_multiplier * regular_placement_mask / enlarge_effect_expression, 
+    spot_quantity_expression = kilo2_amount * random_expression, 
+    spot_radius_expression = make_spot_radius_expression(regular_richness_expression * random_expression),
+    spot_favorability_expression = elevation_favorability * regular_placement_mask,
+  }
+
+  local starting_spots = basic_spot_noise{
+    seed = hash"resource",
     region_size = starting_region_size * 2,
     skip_offset = resource_index,
     skip_span = max_starting_resources * (discovery_level + 1),
-    candidate_point_count = math.min((starting_region_size * 2) ^ 2 / (max_starting_spot_base_radius * 2) ^ 2, 10000),
-    minimum_candidate_point_spacing = max_starting_spot_base_radius * 2,
-    hard_region_target_quantity = false,
-    density_expression = litexp(density_multiplier * starting_placement_mask),
-    spot_quantity_expression = litexp(kilo2_amount),
-    spot_radius_expression = litexp(make_spot_radius_expression(starting_richness_expression)),
-    spot_favorability_expression = litexp(elevation_favorability * center_favorability * starting_placement_mask),
-    basement_value = -math.huge,
-    maximum_spot_basement_radius = max_starting_spot_radius
-  })
+    candidate_point_count = math.min((starting_region_size * 2) ^ 2 / (candidate_point_spacing) ^ 2, 10000),
+    minimum_candidate_point_spacing = candidate_point_spacing,
+    maximum_spot_basement_radius = max_starting_spot_radius,
+
+    density_expression = density_multiplier * starting_placement_mask,
+    spot_quantity_expression = kilo2_amount,
+    spot_radius_expression = make_spot_radius_expression(starting_richness_expression),
+    spot_favorability_expression = elevation_favorability * center_favorability * starting_placement_mask,
+  }
 
   local regular_patches = regular_spots
   local starting_patches = starting_spots
@@ -218,8 +240,9 @@ local function make_resource(params)
     regular_patches = regular_patches + regular_blob_expression * spot_peek_height(regular_spots) * blob_multiplier
     starting_patches = starting_patches + starting_blob_expression * spot_peek_height(starting_spots) * blob_multiplier
   end
-  regular_patches = regular_patches * regular_richness_expression
-  starting_patches = starting_patches * starting_richness_expression
+
+  regular_patches = noise.delimit_procedure(regular_patches) * regular_richness_expression
+  starting_patches = noise.delimit_procedure(starting_patches) * starting_richness_expression
 
   local all_patches
   if discovery_level then
@@ -228,31 +251,111 @@ local function make_resource(params)
     all_patches = regular_patches
   end
 
-  local richness_expression = noise.delimit_procedure(all_patches)
-  local probability_expression = noise.clamp(richness_expression, 0, 1)
-
+  local richness_expression = all_patches
   local additional_richness_expression = additional_richness * base_multiplier * enlarge_effect_expression
   local additional_spot_area = math.pi * make_spot_radius_expression(regular_richness_expression) ^ 2
   richness_expression = richness_expression + kilo2_amount * additional_richness_expression / additional_spot_area
-  richness_expression = richness_expression * richness_multiplier
-
-  if tile_occurrence_probability < 1 then
-    richness_expression = richness_expression / tile_occurrence_probability
-    probability_expression = probability_expression * noise.random_penalty(1, 1 / tile_occurrence_probability) 
-  end
+  richness_expression = richness_expression * (richness_multiplier / tile_occurrence_probability)
   
   return {
     control = control_name,
     order = order,
     richness_expression = richness_expression,
+    probability_expression = noise.clamp(all_patches, 0, 1) * tile_occurrence_probability,
+  }
+end
+
+local function make_enemy_base(discovery_level, order, probability)
+  local control_setting = noise.get_control_setting"enemy-base"
+  local size_multiplier = control_setting.size_multiplier
+  local frequency_multiplier = control_setting.frequency_multiplier
+
+  local distance_from_center = noise.var("distance")
+  local elevation = noise.var("elevation")
+  local starting_area_radius = noise.var("kaizen_starting_area_radius")
+  local enemy_base_density = noise.max(0, noise.var("enemy_base_density"))
+  local enemy_base_size = noise.max(0, noise.var("enemy_base_size"))
+
+  local density_multiplier = size_multiplier * frequency_multiplier * enemy_base_density_multiplier
+  local enemy_base_radius = size_multiplier * enemy_base_size ^ onehalf
+  local elevation_favorability = noise.clamp(elevation, 0, 1)
+
+  local spots = basic_spot_noise{
+    seed = hash"enemy-base",
+    maximum_spot_basement_radius = max_enemy_base_radius,
+
+    density_expression = enemy_base_density * density_multiplier,
+    spot_quantity_expression = math.pi * onethird * enemy_base_radius ^ 2,
+    spot_radius_expression = enemy_base_radius,
+    spot_favorability_expression = elevation_favorability,
+  }
+
+  local blob_expression = blob_noise(8, 1) + blob_noise(24, 1) + blob_noise(64, 2)
+  local base_patch = spots + blob_expression * spot_peek_height(spots) * blob_multiplier
+
+  local enemy_base_placement_mask
+  if discovery_level == 0 then
+    enemy_base_placement_mask = noise.clamp(distance_from_center - starting_area_radius, 0, 1)
+  elseif discovery_level == 1 then
+    enemy_base_placement_mask = noise.clamp((distance_from_center - starting_area_radius) / first_level_radius, 0, 1)
+  else
+    local fade_in_distance = starting_area_radius + first_level_radius + discovery_level_base_radius * (discovery_level - 2)
+    enemy_base_placement_mask = noise.clamp((distance_from_center - fade_in_distance) / discovery_level_base_radius, 0, 1)
+  end
+
+  local probability_expression = noise.delimit_procedure(base_patch)
+  probability_expression = probability_expression * enemy_base_placement_mask * enemy_base_probability_multiplier * probability
+  
+  return
+  {
+    control = "enemy-base",
+    order = order,
+    force = "enemy",
+    richness_expression = tne(1),
     probability_expression = probability_expression,
   }
 end
+
+data:extend{
+  {
+    type = "noise-expression",
+    name = "kaizen_starting_area_radius",
+    expression = noise.define_noise_function( function(x,y,tile,map)
+      local starting_area_multiplier = noise.var("starting_area_radius") / 120
+      return starting_area_base_radius * starting_area_multiplier ^ onehalf
+    end)
+  },
+  -- {
+  --   type = "noise-expression",
+  --   name = "starting_area_radius",
+  --   expression = noise.var("kaizen_starting_area_radius")
+  -- },
+  {
+    type = "noise-expression",
+    name = "enemy_base_size",
+    expression = noise.define_noise_function( function(x,y,tile,map)
+      local distance = noise.var("distance")
+      return distance * enemy_base_size_multiplier
+    end)
+  },
+  {
+    type = "noise-expression",
+    name = "enemy_base_density",
+    expression = noise.define_noise_function( function(x,y,tile,map)
+      local moisture = noise.var("moisture")
+      local temperature = noise.var("temperature")
+      local aux = noise.var("aux")
+      return (1 + moisture * 6 + aux) / 8
+    end)
+  },
+}
 
 return {
   dump_expression = dump_expression,
   hash = hash,
   blob_noise = blob_noise,
+  basic_spot_noise = basic_spot_noise,
   spot_peek_height = spot_peek_height,
   make_resource = make_resource,
+  make_enemy_base = make_enemy_base,
 }

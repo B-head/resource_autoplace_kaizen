@@ -37,7 +37,7 @@ data.raw["resource"]["crude-oil"].autoplace = autoplace.make_resource{
   regular_richness = 10,
   additional_richness = 200,
   patch_size_fluctuance = 0,
-  tile_occurrence_probability = 1/20,
+  tile_occurrence_probability = 1/36,
 }
 data.raw["resource"]["uranium-ore"].autoplace = autoplace.make_resource{
   control_name = "uranium-ore",
@@ -46,3 +46,13 @@ data.raw["resource"]["uranium-ore"].autoplace = autoplace.make_resource{
   resource_density = 100,
   patch_count_per_kt2 = 1/4,
 }
+
+data.raw["unit-spawner"]["biter-spawner"].autoplace = autoplace.make_enemy_base(0, "b-a", 1)
+data.raw["unit-spawner"]["spitter-spawner"].autoplace = autoplace.make_enemy_base(0, "b-a", 1)
+data.raw["turret"]["small-worm-turret"].autoplace = autoplace.make_enemy_base(1, "b-f", 1/2)
+data.raw["turret"]["medium-worm-turret"].autoplace = autoplace.make_enemy_base(2, "b-e", 1/2)
+data.raw["turret"]["big-worm-turret"].autoplace = autoplace.make_enemy_base(3, "b-d", 1/2)
+data.raw["turret"]["behemoth-worm-turret"].autoplace = autoplace.make_enemy_base(4, "b-c", 1/2)
+
+data.raw["map-gen-presets"]["default"]["death-world"].basic_settings.starting_area = 0.5
+data.raw["map-gen-presets"]["default"]["death-world-marathon"].basic_settings.starting_area = 0.5
