@@ -26,23 +26,26 @@ data.raw["resource"]["crude-oil"].autoplace = autoplace.make_resource{
   control_name = "crude-oil",
   order = "d",
   discovery_level = 2,
-  starting_richness = 10,
-  regular_richness = 10,
-  additional_richness = 200,
+  starting_richness = 8,
+  regular_richness = 8,
+  patch_count_per_kt2 = 1/2,
+  additional_richness = 80,
   patch_size_fluctuance = 0,
-  tile_occurrence_probability = 1/20,
+  tile_occurrence_probability = 1/36,
 }
 ```
 
 ## make_resource{} parameters
 * control_name (required)
-    * String identifier used by the autoplace system.
+    * String identifier of autoplace control that applies to this entity.
 * seed (default: use control_name parameter)
     * Seed value to pass to the noise function.
     * Specify number or string.
     * If specify the same value as other resources, the patch will be placed at the same position.
 * order (default: "z")
     * Priority when overlapping with other resources.
+* tile_restriction (default: {})
+    * Restricts surfaces or transition the entity can appear on.
 * discovery_level (default: nil)
     * Specify how far away from the center position there is the first patch.
     * Value of level 0, patches are placed at the center position.

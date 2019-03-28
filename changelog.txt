@@ -1,4 +1,15 @@
 ----
+Version: 0.17.2
+Date: 2019-03-29
+  Features:
+    - Added tile_restriction parameter.
+  Changes:
+    - Changed the ratio of the amount of ore generated with the richness parameter to be closer to vanilla.
+    - Changed make_enemy_base() in probability property to be faithful to numerical values.
+  Balancing:
+    - The placement frequency of oil patches has been halved.
+    - Made a gap in the uranium patch. There is no change in the overall volume.
+----
 Version: 0.17.1
 Date: 2019-03-28
   Features:

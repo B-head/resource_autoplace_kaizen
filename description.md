@@ -1,5 +1,5 @@
 # Description
-This mod improves the spot noise based autoplace added in 0.17. Providing an API for configuration, other MODs make it easy to add resources.
+This mod improves the spot noise based autoplace added in 0.17. It's like RSO. Providing an API for configuration, other MODs make it easy to add resources.
 
 The generation of resources does not change from the spot noise base, but has been improved in the following points.
 - In addition to starting area resources, guarantee that oil and uranium are also in the right place.

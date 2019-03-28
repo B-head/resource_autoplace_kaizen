@@ -2,12 +2,10 @@ local noise = require("noise")
 local expression_to_ascii_math = require("noise.expression-to-ascii-math")
 local tne = noise.to_noise_expression
 
-local base_multiplier = 1/40
+local base_multiplier = 1/25
 local blob_multiplier = 1/8
 local density_fixed_bias = 4
 local enemy_base_density_multiplier = 1/50
-local enemy_base_size_multiplier = 1
-local enemy_base_probability_multiplier = 1/60
 
 local first_level_radius = 32 * 4
 local discovery_level_base_radius = 32 * 12
@@ -120,12 +118,13 @@ local function make_resource(params)
   local control_name = params.control_name
   local seed = params.seed or control_name
   local order = params.order or "z"
+  local tile_restriction = params.tile_restriction or {}
   local discovery_level = params.discovery_level
   
   local starting_richness = params.starting_richness or 1
   local regular_richness = params.regular_richness or 1
   local additional_richness = params.additional_richness or 0
-  local patch_count_per_kt2 = (params.patch_count_per_kt2 or 1)
+  local patch_count_per_kt2 = params.patch_count_per_kt2 or 1
   local resource_density = params.resource_density or 200
 
   local patch_size_fluctuance = params.patch_size_fluctuance or 1/2
@@ -260,6 +259,7 @@ local function make_resource(params)
   return {
     control = control_name,
     order = order,
+    tile_restriction = tile_restriction,
     richness_expression = richness_expression,
     probability_expression = noise.clamp(all_patches, 0, 1) * tile_occurrence_probability,
   }
@@ -304,7 +304,7 @@ local function make_enemy_base(discovery_level, order, probability)
   end
 
   local probability_expression = noise.delimit_procedure(base_patch)
-  probability_expression = probability_expression * enemy_base_placement_mask * enemy_base_probability_multiplier * probability
+  probability_expression = probability_expression * enemy_base_placement_mask * probability
   
   return
   {
@@ -334,8 +334,7 @@ data:extend{
     type = "noise-expression",
     name = "enemy_base_size",
     expression = noise.define_noise_function( function(x,y,tile,map)
-      local distance = noise.var("distance")
-      return distance * enemy_base_size_multiplier
+      return noise.var("distance")
     end)
   },
   {
