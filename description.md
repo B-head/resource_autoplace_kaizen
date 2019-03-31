@@ -15,4 +15,6 @@ The generation of resources does not change from the spot noise base, but has be
 Also, because you are using an existing system, you can use map preview. Map settings are also reflected properly for all parameters.
 
 # Support for other mods
-Because I provide an API, I will not support setting up resource autoplaced for other mods. If you like, please let each mod developer know the existence of this mod! If the mod developer likes this, they will be ready to use this mod.
+This MOD has a function to convert other MOD resources automatically to conform to this MOD.However, because it does not consider the game balance, it is desirable to be officially supported by each MOD developer.
+
+Because I provide an API, I will not individually support to setting up resource autoplace for other mods. If you like, please let each mod developer know the existence of this mod! If the mod developer likes this, they will be ready to use this mod.

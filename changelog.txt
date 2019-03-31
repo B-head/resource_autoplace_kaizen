@@ -1,10 +1,20 @@
 ----
+Version: 0.17.3
+Date: 2019-04-01
+  Features:
+    - Added the function to convert other MOD resources automatically to conform to this MOD.
+    - Added true and false to the discovery_level setting.
+  Balancing:
+    - Starting area resources, increased the amount of iron and reduced the amount of coal.
+  Bugfixes:
+    - Crash when setting discovery_level to nil.
+----
 Version: 0.17.2
 Date: 2019-03-29
   Features:
     - Added tile_restriction parameter.
   Changes:
-    - Changed the ratio of the amount of ore generated with the richness parameter to be closer to vanilla.
+    - Changed the ratio of the amount of resource generated with the richness parameter to be closer to vanilla.
     - Changed make_enemy_base() in probability property to be faithful to numerical values.
   Balancing:
     - The placement frequency of oil patches has been halved.

@@ -114,6 +114,7 @@ local function spot_peek_height(quantity, radius)
   return 3 * quantity / (math.pi * radius^2)
 end
 
+local maked_resources = {}
 local function make_resource(params)
   local control_name = params.control_name
   local seed = params.seed or control_name
@@ -162,6 +163,9 @@ local function make_resource(params)
   if discovery_level then
     local begin_radius
     local end_radius
+    if discovery_level == true then
+      discovery_level = 1
+    end
     if discovery_level == 0 then
       begin_radius = 0
       end_radius = first_level_radius
@@ -180,16 +184,26 @@ local function make_resource(params)
     regular_placement_mask = make_regular_placement_mask(begin_radius)
     enlarge_effect_expression = make_enlarge_effect_expression(end_radius)
   else
-    resource_index = nil
-    starting_region_size = nil
+    local begin_radius
+    local end_radius
+    if discovery_level == false then
+      begin_radius = starting_area_base_radius
+      end_radius = starting_area_base_radius + discovery_level_base_radius
+    else
+      begin_radius = -fade_in_range
+      end_radius = 0
+    end
+    discovery_level = 0
+    resource_index = 0
+    starting_region_size = 0
     max_starting_spot_radius = 0
     starting_placement_mask = tne(0)
-    regular_placement_mask = make_regular_placement_mask(0)
-    enlarge_effect_expression = make_enlarge_effect_expression(0)
+    regular_placement_mask = make_regular_placement_mask(begin_radius)
+    enlarge_effect_expression = make_enlarge_effect_expression(end_radius)
   end
-  log(control_name..".resource_index = "..resource_index)
-  log(control_name..".starting_placement_mask = "..starting_region_size)
-  log(control_name..".max_starting_spot_radius = "..max_starting_spot_radius)
+  log(control_name..".resource_index = "..tostring(resource_index))
+  log(control_name..".starting_placement_mask = "..tostring(starting_region_size))
+  log(control_name..".max_starting_spot_radius = "..tostring(max_starting_spot_radius))
   dump_expression(control_name..".starting_placement_mask", starting_placement_mask)
   dump_expression(control_name..".regular_placement_mask", regular_placement_mask)
   dump_expression(control_name..".enlarge_effect_expression", enlarge_effect_expression)
@@ -256,13 +270,16 @@ local function make_resource(params)
   richness_expression = richness_expression + kilo2_amount * additional_richness_expression / additional_spot_area
   richness_expression = richness_expression * (richness_multiplier / tile_occurrence_probability)
   
-  return {
+  local ret = {
+    is_kaizen = true,
     control = control_name,
     order = order,
     tile_restriction = tile_restriction,
     richness_expression = richness_expression,
     probability_expression = noise.clamp(all_patches, 0, 1) * tile_occurrence_probability,
   }
+  maked_resources[control_name] = ret
+  return ret
 end
 
 local function make_enemy_base(discovery_level, order, probability)
@@ -357,4 +374,5 @@ return {
   spot_peek_height = spot_peek_height,
   make_resource = make_resource,
   make_enemy_base = make_enemy_base,
+  maked_resources = maked_resources,
 }

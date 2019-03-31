@@ -1,6 +1,6 @@
 # Usage
 ```lua:usage
-local autoplace = require("__resource_autoplace_kaizen__.autoplace");
+local autoplace = require("__resource_autoplace_kaizen__.autoplace")
 
 -- Data definition.
 data:extend({
@@ -28,8 +28,8 @@ data.raw["resource"]["crude-oil"].autoplace = autoplace.make_resource{
   discovery_level = 2,
   starting_richness = 8,
   regular_richness = 8,
-  patch_count_per_kt2 = 1/2,
   additional_richness = 80,
+  patch_count_per_kt2 = 1/2,
   patch_size_fluctuance = 0,
   tile_occurrence_probability = 1/36,
 }
@@ -53,6 +53,8 @@ data.raw["resource"]["crude-oil"].autoplace = autoplace.make_resource{
     * Value of level 2, outside the starting area, but placed in the radar scan range.
     * By increasing the level further, can place the first patch further away.
     * Value of nil, although it is placed anywhere, there is no guarantee of the first patch position.
+    * Value of true, This is the same as level 1.
+    * Value of false, Placed outside the starting area, there is no guarantee of the first patch position.
 * starting_richness (default: 1)
     * The amount of resources for patches first placed.
 * regular_richness (default: 1)

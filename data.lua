@@ -1,10 +1,10 @@
-local autoplace = require("autoplace");
+local autoplace = require("autoplace")
 
 data.raw["resource"]["iron-ore"].autoplace = autoplace.make_resource{
   control_name = "iron-ore",
   order = "b",
   discovery_level = 0,
-  starting_richness = 15,
+  starting_richness = 20,
   regular_richness = 10,
 }
 data.raw["resource"]["copper-ore"].autoplace = autoplace.make_resource{
@@ -18,7 +18,7 @@ data.raw["resource"]["coal"].autoplace = autoplace.make_resource{
   control_name = "coal",
   order = "b",
   discovery_level = 0,
-  starting_richness = 15,
+  starting_richness = 10,
   regular_richness = 8,
 }
 data.raw["resource"]["stone"].autoplace = autoplace.make_resource{
@@ -35,8 +35,8 @@ data.raw["resource"]["crude-oil"].autoplace = autoplace.make_resource{
   discovery_level = 2,
   starting_richness = 8,
   regular_richness = 8,
-  patch_count_per_kt2 = 1/2,
   additional_richness = 80,
+  patch_count_per_kt2 = 1/2,
   patch_size_fluctuance = 0,
   tile_occurrence_probability = 1/36,
 }
