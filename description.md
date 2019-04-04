@@ -7,6 +7,10 @@ The generation of resources does not change from the spot noise base, but has be
 - Because the stone is a little away from the center to append a good challenge to the early game.
 - Oil is placed in more stable amounts.
 - In the near area is the frequency of resource placed is the same as vanilla, but the farther to go, the lower the frequency of placed.
+- Resources will be placed away from the trees.
+- More trees are placed at high moisture.
+- Placed the dead trees to concentrated.
+- Placed the rocks in the lowland.
 - The starting area has a more stable area.
 - The setting for starting area size is adjusted by area, not by radius.
 - The placement of the enemy base is biased towards high moisture.

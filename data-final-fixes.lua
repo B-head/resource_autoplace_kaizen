@@ -192,8 +192,8 @@ for k, v in pairs(data.raw["resource"]) do
     log("check "..k.." = "..table_to_string(as))
     if as.is_kaizen then
         -- no operation
-    elseif autoplace.maked_resources[as.control] then
-        v.autoplace = autoplace.maked_resources[as.control]
+    elseif autoplace._maked_resources[as.control] then
+        v.autoplace = autoplace._maked_resources[as.control]
     elseif as.richness_expression then
         local params = salvage_parameters(as)
         log(as.control.." old = "..table_to_string(params))

@@ -1,4 +1,15 @@
-----
+---------------------------------------------------------------------------------------------------
+Version: 0.17.4
+Date: 2019-
+  Features:
+    - Resources will be placed away from the trees.
+    - More trees are placed at high moisture.
+    - Placed the dead trees to concentrated.
+    - Placed the rocks in the lowland.
+  Balancing:
+    - The default starting area radius is now exactly 8 chunks.
+    - The internal values have been adjusted to placement of resources.
+---------------------------------------------------------------------------------------------------
 Version: 0.17.3
 Date: 2019-04-01
   Features:
@@ -8,7 +19,7 @@ Date: 2019-04-01
     - Starting area resources, increased the amount of iron and reduced the amount of coal.
   Bugfixes:
     - Crash when setting discovery_level to nil.
-----
+---------------------------------------------------------------------------------------------------
 Version: 0.17.2
 Date: 2019-03-29
   Features:
@@ -19,7 +30,7 @@ Date: 2019-03-29
   Balancing:
     - The placement frequency of oil patches has been halved.
     - Made a gap in the uranium patch. There is no change in the overall volume.
-----
+---------------------------------------------------------------------------------------------------
 Version: 0.17.1
 Date: 2019-03-28
   Features:
